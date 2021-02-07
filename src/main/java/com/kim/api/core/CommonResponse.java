@@ -19,4 +19,10 @@ public class CommonResponse<I> {
         this.result = result;
         this.message = message;
     }
+
+    public CommonResponse(String result, String message, I info) {
+        this.result = result;
+        this.message = message;
+        this.info = info;
+    }
 }

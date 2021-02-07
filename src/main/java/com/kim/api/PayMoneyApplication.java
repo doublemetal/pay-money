@@ -7,6 +7,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
+/**
+ * 페이머니 관련 API
+ */
 @SpringBootApplication(scanBasePackages = "com.kim.api")
 public class PayMoneyApplication {
 
