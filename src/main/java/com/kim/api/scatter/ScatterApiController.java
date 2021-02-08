@@ -35,7 +35,6 @@ public class ScatterApiController {
         }
 
         Scatter scatter = scatterApiBO.createScatter(userId, roomId, scatterApiRequest);
-        scatterApiBO.createScatterDetail(scatter);
         return new CommonResponse<>("success", "Request is succeed.", scatter.getToken());
     }
 

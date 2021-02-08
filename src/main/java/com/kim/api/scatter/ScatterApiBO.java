@@ -13,14 +13,16 @@ import javax.validation.Valid;
 public class ScatterApiBO {
     private static final int TOKEN_LENGTH = 3;
 
-    private final ScatterApiRepository scatterApiRepository;
+    private final ScatterRepository scatterApiRepository;
+    private final ScatterDetailRepository scatterDetailRepository;
 
-    public ScatterApiBO(ScatterApiRepository scatterApiRepository) {
+    public ScatterApiBO(ScatterRepository scatterApiRepository, ScatterDetailRepository scatterDetailRepository) {
         this.scatterApiRepository = scatterApiRepository;
+        this.scatterDetailRepository = scatterDetailRepository;
     }
 
     /**
-     * 뿌리기 메인 데이터 생성
+     * 뿌리기 생성
      *
      * @return Token
      */
@@ -30,13 +32,26 @@ public class ScatterApiBO {
         Scatter scatter = new Scatter(token, userId, roomId);
         scatter.setAmount(scatterApiRequest.getAmount());
         scatter.setCount(scatterApiRequest.getCount());
-        return scatterApiRepository.save(scatter);
+
+        Scatter save = scatterApiRepository.save(scatter);
+        createScatterDetail(scatter);
+
+        return save;
     }
 
     /**
      * 뿌리기 상세 데이터 생성(금액 분배)
      */
     public void createScatterDetail(Scatter scatter) {
-        // Random amount
+        int remainAmount = scatter.getAmount();
+        for (int i = scatter.getCount() - 1; i >= 0; i--) {
+            int amount = rand(1, remainAmount - i);
+            remainAmount -= amount;
+            scatterDetailRepository.save(new ScatterDetail(scatter, amount));
+        }
+    }
+
+    private int rand(int min, int max) {
+        return (int) (Math.random() * (max - min + 1) + min);
     }
 }
