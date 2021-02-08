@@ -1,11 +1,18 @@
 package com.kim.api.scatter;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
+
+@Transactional(readOnly = true)
 @Slf4j
 @Service
 public class ScatterApiBO {
+    private static final int TOKEN_LENGTH = 3;
+
     private final ScatterApiRepository scatterApiRepository;
 
     public ScatterApiBO(ScatterApiRepository scatterApiRepository) {
@@ -17,11 +24,13 @@ public class ScatterApiBO {
      *
      * @return Token
      */
-    public Scatter createScatter(String userId, String roomId) {
-        // Random token
-        // None PK AI column is needed
-
-        return null;
+    @Transactional
+    public Scatter createScatter(String userId, String roomId, @Valid ScatterApiRequest scatterApiRequest) {
+        String token = RandomStringUtils.randomAlphanumeric(TOKEN_LENGTH);
+        Scatter scatter = new Scatter(token, userId, roomId);
+        scatter.setAmount(scatterApiRequest.getAmount());
+        scatter.setCount(scatterApiRequest.getCount());
+        return scatterApiRepository.save(scatter);
     }
 
     /**

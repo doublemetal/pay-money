@@ -1,7 +1,6 @@
 package com.kim.api.scatter;
 
 import com.kim.api.core.CommonResponse;
-import com.kim.api.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,41 +27,14 @@ public class ScatterApiController {
      * @return 응답
      */
     @PostMapping
-    public CommonResponse scatter(@RequestAttribute("X-USER-ID") String userId,
-                                  @RequestAttribute("X-ROOM-ID") String roomId,
+    public CommonResponse scatter(@RequestHeader("X-USER-ID") String userId,
+                                  @RequestHeader("X-ROOM-ID") String roomId,
                                   @Valid @RequestBody ScatterApiRequest scatterApiRequest) {
-        // TODO 가능하면 validator 로 분리
-        // userId 체크, 검증불가 존재만 체크
-        // roomId 체크, 검증불가 존재만 체크
-        // 뿌릴 금액 체크 > 사람당 최소 1원, 4명이면 최소 4원
-        // 뿌릴 인원 체크 > 0
-        // token 을 반환, 3자리 문자열, 3자리 UUID??
-        // 3자리이기 때문에 userId + roomId + token 으로 키를 잡음
-        // 요구사항에서도 token 만 언급되고, 그 외의 값들로 컨트롤되면 복잡해질 거 같다
-        // 토큰은 10분이면 만료되기 때문에 대화방 내에서 짧은 시간 내에 조합수만큼의 토큰 생성 가능 (활성화된 토큰을 검증) <- 멀티스레드 대응 필요
-        // 위에서는 복합키로 언급했지만, 토큰 중복 가능성 때문에
-        // 그냥 시퀀스를 키로 하고 대화방 내에서는 단시간 내에는 999개까지만 생성가능하도록 설정
-        // 멀티스레드 대응을 위해 복합키로 다시 변경 (이렇게 하면 토큰 중복 검사만 하면 됨)
-
-        if (StringUtils.isEmpty(userId)) {
-            throw new RuntimeException("UserId is empty");
-        }
-
-        if (StringUtils.isEmpty(userId)) {
-            throw new RuntimeException("roomId is empty");
-        }
-
-        if (scatterApiRequest.getAmount() <= 0 || scatterApiRequest.getCount() <= 0) {
-            throw new RuntimeException("Request is invalid");
-        }
-
-        if (scatterApiRequest.getAmount() / scatterApiRequest.getCount() > 0) {
+        if (scatterApiRequest.getAmount() < scatterApiRequest.getCount()) {
             throw new RuntimeException("Not enough amount");
         }
 
-        // 메인 데이터 생성
-        // 분배건 데이터 생성
-        Scatter scatter = scatterApiBO.createScatter(userId, roomId);
+        Scatter scatter = scatterApiBO.createScatter(userId, roomId, scatterApiRequest);
         scatterApiBO.createScatterDetail(scatter);
         return new CommonResponse<>("success", "Request is succeed.", scatter.getToken());
     }
