@@ -25,7 +25,7 @@ public class ScatterDetail {
     @Column(name = "amount")
     private int amount;
     @Column(name = "receive_yn")
-    private String receiveYn;
+    private String receiveYn = "N";
 
     @Transient
     private ScatterDetailReceive scatterDetailReceive;

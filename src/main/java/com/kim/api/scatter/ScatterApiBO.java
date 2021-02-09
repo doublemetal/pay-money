@@ -6,10 +6,12 @@ import com.kim.api.scatter.repository.ScatterDetailRepository;
 import com.kim.api.scatter.repository.ScatterRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,9 +42,15 @@ public class ScatterApiBO {
      */
     public ScatterDto getCurrentScatter(String token) {
         Scatter scatter = getScatter(token);
+        if (scatter == null) {
+            throw new RuntimeException("Not exists");
+        }
 
         ScatterDto scatterDto = new ScatterDto();
+        scatterDto.setUserId(scatter.getUserId());
+        scatterDto.setRoomId(scatter.getRoomId());
         scatterDto.setRegDate(scatter.getRegDate());
+        scatterDto.setDate(scatter.getRegDate().format(DateTimeFormatter.ISO_DATE_TIME));
         scatterDto.setAmount(scatter.getAmount());
 
         List<ScatterDto.Receive> receives = getReceives(scatter.getScatterDetail());
@@ -58,6 +66,7 @@ public class ScatterApiBO {
         }
 
         return scatterDetail.stream()
+                .filter(detail -> StringUtils.equals(detail.getReceiveYn(), "Y"))
                 .peek(detail -> detail.setScatterDetailReceive(scatterDetailReceiveRepository.findByDetailSequence(detail.getSequence())))
                 .map(ScatterDetail::convert).collect(Collectors.toList());
     }

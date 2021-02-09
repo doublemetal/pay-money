@@ -73,11 +73,11 @@ public class ScatterApiController {
     }
 
     private boolean isTimeout(LocalDateTime regDate) {
-        return regDate.plusMinutes(10).isAfter(LocalDateTime.now());
+        return LocalDateTime.now().isAfter(regDate.plusMinutes(10));
     }
 
     private boolean isTimeoutInView(LocalDateTime regDate) {
-        return regDate.plusDays(7).isAfter(LocalDateTime.now());
+        return LocalDateTime.now().isAfter(regDate.plusDays(7));
     }
 
     /**

@@ -18,8 +18,10 @@ public class ScatterDto {
     private String userId;
     @JsonIgnore
     private String roomId;
+    @JsonIgnore
+    private LocalDateTime regDate;
 
-    private LocalDateTime regDate; // 뿌린 시각
+    private String date; // 뿌린 시각
     private int amount; // 뿌린 금액
     private int receivedAmount; // 받기 완료된 금액
     private List<Receive> receives;
