@@ -1,11 +1,15 @@
 package com.kim.api.scatter;
 
 import com.kim.api.core.CommonResponse;
+import com.kim.api.scatter.model.Scatter;
+import com.kim.api.scatter.model.ScatterApiRequest;
+import com.kim.api.scatter.model.ScatterDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 
 /**
  * 뿌리기 API
@@ -24,7 +28,7 @@ public class ScatterApiController {
      * 뿌리기 API
      * 잔액은 항상 충분히 있는 것으로 가정
      *
-     * @return 응답
+     * @return Token
      */
     @PostMapping
     public CommonResponse scatter(@RequestHeader("X-USER-ID") String userId,
@@ -40,26 +44,36 @@ public class ScatterApiController {
 
     /**
      * 받기 API
-     * TODO token
      *
-     * @return
+     * @return 받은 금액
      */
     @PostMapping("/{token}")
-    public CommonResponse receive(HttpServletRequest request, @PathVariable String token,
-                                  @Valid @RequestBody ScatterApiRequest scatterApiRequest) {
-        // Check user, room
+    public CommonResponse receive(@RequestHeader("X-USER-ID") String userId,
+                                  @RequestHeader("X-ROOM-ID") String roomId,
+                                  @PathVariable String token) {
+        if (token.length() != Scatter.TOKEN_LENGTH) {
+            throw new RuntimeException("Invalid token");
+        }
 
-        // 토큰 체크
-        // 이미 받았는지 체크
-        // 본인이 뿌린건인지 체크
-        // 뿌린 room 인지 체크
-        // 10분이 지났는지 체크
+        Scatter scatter = scatterApiBO.getScatter(token);
 
-        // 랜덤 혹은 순서대로 분배건 할당 <- TODO 여기가 중요
-        // TODO 남은 뿌리기건의 분배건과 유저를 맵핑하여 데이터 생성 (맵핑 테이블)
+        // TODO Validation 집합으로 분리
+        if (!scatter.getRoomId().equals(roomId)) {
+            throw new RuntimeException("Invalid room");
+        } else if (scatter.getUserId().equals(userId)) {
+            throw new RuntimeException("You can't get the amount you started.");
+        } else if (scatterApiBO.hasReceive(token, userId)) {
+            throw new RuntimeException("You already got it");
+        } else if (isTimeout(scatter.getRegDate())) {
+            throw new RuntimeException("10 minutes exceeded and cannot proceed");
+        }
 
-        // 금액을 리턴
-        return null;
+        ScatterDetail receive = scatterApiBO.receive(token, userId);
+        return new CommonResponse<>("success", "Request is succeed.", receive.getAmount());
+    }
+
+    private boolean isTimeout(LocalDateTime regDate) {
+        return regDate.plusMinutes(10).isAfter(LocalDateTime.now());
     }
 
     @GetMapping("/{token}")

@@ -1,4 +1,4 @@
-package com.kim.api.scatter;
+package com.kim.api.scatter.model;
 
 import lombok.Getter;
 

@@ -1,4 +1,4 @@
-package com.kim.api.scatter;
+package com.kim.api.scatter.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -6,44 +6,45 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.*;
-import java.util.Date;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.time.LocalDateTime;
 
 /**
  * 뿌리기 모델
  */
-@IdClass(ScatterId.class)
 @Table(name = "scatter")
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 public class Scatter {
+    public static final int TOKEN_LENGTH = 3;
+
     @Id
     @Column(name = "token")
     private String token;
-    @Id
+
     @Column(name = "user_id")
     private String userId;
-    @Id
     @Column(name = "room_id")
     private String roomId;
 
     @CreationTimestamp
     @Column(name = "reg_date")
-    private Date regDate;
+    private LocalDateTime regDate;
     @UpdateTimestamp
     @Column(name = "mod_date")
-    private Date modDate;
+    private LocalDateTime modDate;
 
     @Column
     private int amount;
     @Column
     private int count;
 
-    public Scatter(String token, String userId, String roomId) {
+    public Scatter(String token) {
         this.token = token;
-        this.userId = userId;
-        this.roomId = roomId;
     }
 }

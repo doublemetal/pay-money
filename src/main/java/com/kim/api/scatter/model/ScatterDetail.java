@@ -1,4 +1,4 @@
-package com.kim.api.scatter;
+package com.kim.api.scatter.model;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,22 +17,18 @@ import javax.persistence.*;
 public class ScatterDetail {
     @Id
     @GeneratedValue
+    @Column(name = "sequence")
     private long sequence;
 
     @Column(name = "token")
     private String token;
-    @Column(name = "user_id")
-    private String userId;
-    @Column(name = "room_id")
-    private String roomId;
-
     @Column
     private int amount;
+    @Column(name = "receive_yn")
+    private String receiveYn;
 
-    public ScatterDetail(Scatter scatter, int amount) {
-        this.token = scatter.getToken();
-        this.userId = scatter.getUserId();
-        this.roomId = scatter.getRoomId();
+    public ScatterDetail(String token, int amount) {
+        this.token = token;
         this.amount = amount;
     }
 }
