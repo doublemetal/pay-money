@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Optional;
 
 /**
  * 뿌리기 상세 모델
@@ -17,18 +18,26 @@ import javax.persistence.*;
 public class ScatterDetail {
     @Id
     @GeneratedValue
-    @Column(name = "sequence")
     private long sequence;
 
     @Column(name = "token")
     private String token;
-    @Column
+    @Column(name = "amount")
     private int amount;
     @Column(name = "receive_yn")
     private String receiveYn;
 
+    @Transient
+    private ScatterDetailReceive scatterDetailReceive;
+
     public ScatterDetail(String token, int amount) {
         this.token = token;
         this.amount = amount;
+    }
+
+    public static ScatterDto.Receive convert(ScatterDetail scatterDetail) {
+        return new ScatterDto.Receive(scatterDetail.getAmount(), Optional
+                .ofNullable(scatterDetail.getScatterDetailReceive())
+                .orElseGet(ScatterDetailReceive::new).getUserId());
     }
 }

@@ -4,10 +4,10 @@ import com.kim.api.core.CommonResponse;
 import com.kim.api.scatter.model.Scatter;
 import com.kim.api.scatter.model.ScatterApiRequest;
 import com.kim.api.scatter.model.ScatterDetail;
+import com.kim.api.scatter.model.ScatterDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 
@@ -76,17 +76,29 @@ public class ScatterApiController {
         return regDate.plusMinutes(10).isAfter(LocalDateTime.now());
     }
 
+    private boolean isTimeoutInView(LocalDateTime regDate) {
+        return regDate.plusDays(7).isAfter(LocalDateTime.now());
+    }
+
+    /**
+     * 조회 API
+     *
+     * @return
+     */
     @GetMapping("/{token}")
-    public CommonResponse getScatter(HttpServletRequest request, @PathVariable String token) {
-        // Check user, room
+    public CommonResponse getScatter(@RequestHeader("X-USER-ID") String userId,
+                                     @RequestHeader("X-ROOM-ID") String roomId,
+                                     @PathVariable String token) {
+        ScatterDto currentScatter = scatterApiBO.getCurrentScatter(token);
 
-        // 토큰 체크
-        // 본인이 뿌린건인지 체크
-        // 7일 이내 체크
+        if (!currentScatter.getRoomId().equals(roomId)) {
+            throw new RuntimeException("Invalid room");
+        } else if (!currentScatter.getUserId().equals(userId)) {
+            throw new RuntimeException("Invalid user");
+        } else if (isTimeoutInView(currentScatter.getRegDate())) {
+            throw new RuntimeException("7 days exceeded and cannot proceed");
+        }
 
-        // 뿌리기 현재 상태 리턴
-        // 뿌린 시각, 뿌린 금액, 받기 완료된 금액, 받기 완료된 정보(받은 금액, 받은 사용자 아이디 리스트)
-        // 뿌리기 테이블, 상세 테이블 필요
-        return null;
+        return new CommonResponse<>("success", "Request is succeed.", currentScatter);
     }
 }

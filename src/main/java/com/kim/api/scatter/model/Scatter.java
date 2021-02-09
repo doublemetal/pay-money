@@ -6,11 +6,9 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 뿌리기 모델
@@ -47,4 +45,8 @@ public class Scatter {
     public Scatter(String token) {
         this.token = token;
     }
+
+    @OneToMany
+    @JoinColumn(name = "token")
+    private List<ScatterDetail> scatterDetail;
 }

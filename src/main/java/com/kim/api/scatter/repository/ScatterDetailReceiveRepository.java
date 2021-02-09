@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ScatterDetailReceiveRepository extends JpaRepository<ScatterDetailReceive, String> {
     int countByTokenAndUserId(String token, String userId);
+
+    ScatterDetailReceive findByDetailSequence(long detailSequence);
 }

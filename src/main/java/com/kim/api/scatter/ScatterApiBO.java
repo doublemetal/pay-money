@@ -1,9 +1,6 @@
 package com.kim.api.scatter;
 
-import com.kim.api.scatter.model.Scatter;
-import com.kim.api.scatter.model.ScatterApiRequest;
-import com.kim.api.scatter.model.ScatterDetail;
-import com.kim.api.scatter.model.ScatterDetailReceive;
+import com.kim.api.scatter.model.*;
 import com.kim.api.scatter.repository.ScatterDetailReceiveRepository;
 import com.kim.api.scatter.repository.ScatterDetailRepository;
 import com.kim.api.scatter.repository.ScatterRepository;
@@ -11,8 +8,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
-import javax.validation.Valid;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Transactional(readOnly = true)
 @Slf4j
@@ -36,12 +36,43 @@ public class ScatterApiBO {
     }
 
     /**
+     * @return 뿌리기 현재 상태
+     */
+    public ScatterDto getCurrentScatter(String token) {
+        Scatter scatter = getScatter(token);
+
+        ScatterDto scatterDto = new ScatterDto();
+        scatterDto.setRegDate(scatter.getRegDate());
+        scatterDto.setAmount(scatter.getAmount());
+
+        List<ScatterDto.Receive> receives = getReceives(scatter.getScatterDetail());
+        scatterDto.setReceives(receives);
+        scatterDto.setReceivedAmount(getReceiveAmount(receives));
+
+        return scatterDto;
+    }
+
+    private List<ScatterDto.Receive> getReceives(List<ScatterDetail> scatterDetail) {
+        if (CollectionUtils.isEmpty(scatterDetail)) {
+            return Collections.emptyList();
+        }
+
+        return scatterDetail.stream()
+                .peek(detail -> detail.setScatterDetailReceive(scatterDetailReceiveRepository.findByDetailSequence(detail.getSequence())))
+                .map(ScatterDetail::convert).collect(Collectors.toList());
+    }
+
+    private int getReceiveAmount(List<ScatterDto.Receive> receives) {
+        return receives.stream().mapToInt(ScatterDto.Receive::getAmount).sum();
+    }
+
+    /**
      * 뿌리기 생성
      *
      * @return Token
      */
     @Transactional
-    public Scatter createScatter(String userId, String roomId, @Valid ScatterApiRequest scatterApiRequest) {
+    public Scatter createScatter(String userId, String roomId, ScatterApiRequest scatterApiRequest) {
         String token = RandomStringUtils.randomAlphanumeric(Scatter.TOKEN_LENGTH);
         Scatter scatter = new Scatter(token);
         scatter.setUserId(userId);
